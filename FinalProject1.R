@@ -72,12 +72,12 @@ ggplot(spotify_data, aes(x = danceability, y = song_popularity)) +
   geom_smooth()
 # graph 3
 
-ggplot(top_playlist, aes(x = danceability, y = song_popularity)) + 
+ggplot(spotify_data, aes(x = danceability, y = song_popularity)) + 
   geom_point() + facet_wrap(~top_playlist) +
   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
 # graph 4 
 
-ggplot(wages_train, aes(x = energy, y = song_popularity, fill = top_playlist)) +
+ggplot(spotify_data, aes(x = energy, y = song_popularity, fill = top_playlist)) +
   geom_density_ridges()
 # graph 5 
 
