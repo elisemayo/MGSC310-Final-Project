@@ -22,6 +22,7 @@ spotify_data <- full_join(x = spotify_data,
 
 spotify_data <- spotify_data %>% distinct()
 # getting rid of duplicates
+spotify_data <- spotify_data %>% group_by(title, artist_name) %>% filter(n()>1)
 
 top_hits <- spotify_data %>% filter(song_popularity > 80) %>% 
   group_by(playlist)
@@ -42,6 +43,16 @@ top_hits_df <- data.frame(
 # reordering factor levels by frequency to see top playlists
 
 # sentiment stuff
+# scrape album lyrics
+#Install genius r from github page and not from cran we need to reinstall
+#Get API Key and register with genius (can do this if you have a twitter)--> Edit system environment variable(hard coded information, tells you about this instance of r
+#store within this the API key--> genius token, set env var in r)
+#sys.setenv(Genius_API_Token = "put unique key here")
+#sys.getenv()--> Make sure the genius api token is there
+#genius_token("")
+#Search for songs to get id--> put access_token = genius_token() in each function 
+#Get_lyrics_id(search_results$id[1], token code)
+#lyrics <- map_df(tracklist$song_lyrics_url, get_lyrics_url)
 # scrape album lyrics
 #lyrics <- map_df(tracklist$song_lyrics_url, get_lyrics_url)
 
