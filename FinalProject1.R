@@ -19,8 +19,6 @@ spotify_data <- full_join(x = spotify_data,
                           y = spotify_data2,
                           by = "song_name")
 # merging song data and song info
-
-spotify_data <- spotify_data %>% distinct()
 # getting rid of duplicates
 spotify_data <- spotify_data %>% group_by(title, artist_name) %>% filter(n()>1)
 
@@ -35,11 +33,6 @@ top_hits_df <- data.frame(
 )
 # finding the most popular songs
 #factor(top_hits$playlist)
-
-
-
-
-
 # reordering factor levels by frequency to see top playlists
 
 # sentiment stuff
