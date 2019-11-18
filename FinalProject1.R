@@ -167,9 +167,11 @@ library(corrplot)
 corrplot(cormat)
 # graph 1
 
-ggplot(spotify_data, aes(x = energy, y = loudness)) + 
+p <- ggplot(spotify_data, aes(x = energy, y = loudness)) + 
   geom_point() +
-  geom_smooth()
+  geom_smooth() 
+
+p +  transition_reveal(energy)
 # graph 2
 
 ggplot(spotify_data, aes(x = danceability, y = song_popularity)) + 
