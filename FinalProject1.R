@@ -15,9 +15,10 @@ spotify_data2 <- read.csv("song_info.csv")
 # ------------------------------------------------------------------
 
 # data cleaning 
-spotify_data <- full_join(x = spotify_data,
-                          y = spotify_data2,
-                          by = "song_name")
+spotify_data <- full_join(spotify_data %>% group_by(song_name) %>% mutate(id = row_number()),
+          spotify_data2 %>% group_by(song_name) %>% mutate(id = row_number()), 
+          by = c("song_name", "id"))
+
 # merging song data and song info
 # getting rid of duplicates
 spotify_data <- spotify_data %>% group_by(title, artist_name) %>% filter(n()>1)
