@@ -28,16 +28,7 @@ top_hits_levels <- fct_lump(top_hits$playlist, n = 9)
 
 top_hits_df <- data.frame(
   top_hits,
-  levels = top_hits_levels
-)
-# finding the most popular songs
-#factor(top_hits$playlist)
-
-
-
-
-
-# reordering factor levels by frequency to see top playlists
+  levels = top_hits_levels)
 
 # sentiment stuff
 Sys.setenv(GENIUS_API_TOKEN = "4_BzjOh_yAd-EUJnRtmIo14sgluBiT20ERey8PpJ3OlWAcYvV3oolNZy9DUTnt-n")
@@ -107,6 +98,8 @@ summary(spotify_data)
 train_idx <- sample(1:nrow(spotify_data), size = 0.75 * nrow(spotify_data))
 spotify_train <- spotify_data %>% slice(train_idx)
 spotify_test <- spotify_data %>% slice(-train_idx)
+
+# --------------------------------------------------------------------
 
 # predictive models 
 # linear regression 1 
