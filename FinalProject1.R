@@ -60,10 +60,29 @@ for(i in 2:rows){# scrape album tracklist
   
   sentiment_DF <- data.frame(spotify_data, sentiment = sentiment)
 }
-token <- create_token(access_token = "4_BzjOh_yAd-EUJnRtmIo14sgluBiT20ERey8PpJ3OlWAcYvV3oolNZy9DUTnt-n")
-tracklist <- get_album_tracklist_search(artist_name = "Green Day",
-                                        album_name = "Greatest Hits: God's Favorite Band",
-                                        access_token)
+#This is where we tried to fix the problem with the DF by taking the code out of the for loop
+#This code is incomplete and doesn't work
+tracklist <- get_album_tracklist_search(artist_name = spotify_data$artist_name[2],
+                                        album_name = spotify_data$album_names[2])
+# scrape album lyrics
+lyrics <- map_df(tracklist$song_lyrics_url, get_lyrics_url)
+
+# counting negative / positive words
+sentiment <- lyrics %>%
+  unnest_tokens(word, line) %>%
+  # remove stop words
+  anti_join(stop_words) %>%
+  # join afinn score
+  inner_join(bing) %>%
+  # count negative / positive words
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+sentiment_DF <- data.frame(sentiment = sentiment)
+view(sentiment_DF)
+
+new_spotify_DF <- full_join(spotify_data %>% group_by(song_name) %>%  mutate(id = row_number()),
+                          sentiment_DF %>% group_by(song_name) %>% mutate(id = row_number()),
+                          )
 # scrape album lyrics
 #Install genius r from github page and not from cran we need to reinstall
 #Get API Key and register with genius (can do this if you have a twitter)--> Edit system environment variable(hard coded information, tells you about this instance of r
