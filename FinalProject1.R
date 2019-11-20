@@ -39,7 +39,8 @@ help("geniusr")
 rows <- nrow(spotify_data)
 
 bing <- get_sentiments("bing")
-for(i in 1:rows){# scrape album tracklist
+for(i in 2:rows){# scrape album tracklist
+  genius_token(force = FALSE)
   tracklist <- get_album_tracklist_search(artist_name = spotify_data$artist_name[i],
                                           album_name = spotify_data$album_names[i])
   
