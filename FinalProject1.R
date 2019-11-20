@@ -8,6 +8,11 @@ library(glmnet)
 library(glmnetUtils)
 library(randomForest)
 library(ElemStatLearn)
+library(dplyr)
+library(tidytext)
+library(purrr)
+library(rtweet)
+library(gganimate)
 # ------------------------------------------------------------------
 
 # data
