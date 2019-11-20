@@ -36,6 +36,7 @@ top_hits_df <- data.frame(
   levels = top_hits_levels)
 
 # sentiment stuff
+devtools::install_github("ewenme/geniusr")
 Sys.setenv(GENIUS_API_TOKEN = "4_BzjOh_yAd-EUJnRtmIo14sgluBiT20ERey8PpJ3OlWAcYvV3oolNZy9DUTnt-n")
 genius_token()
 
