@@ -37,59 +37,6 @@ top_hits_df <- data.frame(
   top_hits,
   levels = top_hits_levels)
 
-# sentiment stuff
-# devtools::install_github("ewenme/geniusr")
-Sys.setenv(GENIUS_API_TOKEN = "4_BzjOh_yAd-EUJnRtmIo14sgluBiT20ERey8PpJ3OlWAcYvV3oolNZy9DUTnt-n")
-genius_token()
-
-rows <- nrow(spotify_data)
-
-bing <- get_sentiments("bing")
-for(i in 2:rows){# scrape album tracklist
-  tracklist <- get_album_tracklist_search(artist_name = spotify_data$artist_name[i],
-                                          album_name = spotify_data$album_names[i])
-  
-  # scrape album lyrics
-  lyrics <- map_df(tracklist$song_lyrics_url, get_lyrics_url)
-  
-  # counting negative / positive words
-  sentiment <- lyrics %>%
-    unnest_tokens(word, line) %>%
-    # remove stop words
-    anti_join(stop_words) %>%
-    # join afinn score
-    inner_join(bing) %>%
-    # count negative / positive words
-    count(word, sentiment, sort = TRUE) %>%
-    ungroup()
-  
-  sentiment_DF <- data.frame(spotify_data, sentiment = sentiment)
-}
-
-# scrape album lyrics
-#Install genius r from github page and not from cran we need to reinstall
-#Get API Key and register with genius (can do this if you have a twitter)--> Edit system environment variable(hard coded information, tells you about this instance of r
-#store within this the API key--> genius token, set env var in r)
-#sys.setenv(Genius_API_Token = "put unique key here")
-#sys.getenv()--> Make sure the genius api token is there
-#genius_token("")
-#Search for songs to get id--> put access_token = genius_token() in each function 
-#Get_lyrics_id(search_results$id[1], token code)
-#lyrics <- map_df(tracklist$song_lyrics_url, get_lyrics_url)
-# scrape album lyrics
-#lyrics <- map_df(tracklist$song_lyrics_url, get_lyrics_url)
-
-# counting negative / positive words
-#sentiment <- lyrics %>%
-# unnest_tokens(word, line) %>%
-# remove stop words
-#anti_join(stop_words) %>%
-# join afinn score
-#  inner_join(bing) %>%
-# count negative / positive words
-# count(word, sentiment, sort = TRUE) %>%
-#  ungroup()
-
 # --------------------------------------------------------------------
 
 # summary statistics
