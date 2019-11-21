@@ -238,5 +238,5 @@ ggplot(top_hits_df, aes(x = danceability, y = song_popularity)) +
 # graph 4 
 
 ggplot(top_hits_df, aes(x = energy, y = levels, fill = song_popularity)) +
-  geom_density_ridges()
+  geom_density_ridges(fill = "darkred")
 # graph 5 
