@@ -25,7 +25,7 @@ bing <- get_sentiments("bing")
 sentiment_scores <- rep(NA, nrow(spotify_subset))
 rows <- nrow(spotify_subset)
 
-for(i in 517:rows){
+for(i in 1:rows){
   song_search <- search_song(spotify_subset$song_name[i],10)
   
   song <- song_search %>% filter(artist_name == spotify_subset$artist_name[i])
@@ -59,9 +59,6 @@ sentiment_scores <- data.frame(sentiment_scores)
 spotify_subset$sentiment_scores <- NA
 spotify_subset$sentiment_scores <- sentiment_scores$sentiment_scores
 
-#spotify_subset_clean <- spotify_subset %>% 
- # filter(sentiment_scores)
-
 ggplot(spotify_subset, aes(x = sentiment_scores, y = song_popularity)) + 
-  geom_point() +
+  geom_point(color = "green") +
   xlim(-100,100)
