@@ -199,6 +199,7 @@ rf_fit <- randomForest(song_popularity ~ instrumentalness + energy + loudness,
                        importance = TRUE,
                        localImp = TRUE)
 rf_fit
+plot_min_depth_distribution(rf_fit)
 
 test_preds <- predict(rf_fit, spotify_test)
 summary(test_preds)
