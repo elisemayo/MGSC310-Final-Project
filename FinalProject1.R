@@ -14,6 +14,8 @@ library(tidytext)
 library(purrr)
 library(rtweet)
 library(gganimate)
+library(magrittr)
+library(corrplot)
 # ------------------------------------------------------------------
 
 # data
@@ -21,6 +23,10 @@ spotify_data <- read.csv("song_data.csv")
 spotify_data2 <- read.csv("song_info.csv")
 
 # ------------------------------------------------------------------
+cormat <- cor(spotify_data %>% select_if(is.numeric) %>% drop_na()) %>% 
+  round(3)
+cormat
+corrplot(cormat)
 
 # data cleaning 
 spotify_data <- full_join(spotify_data %>% group_by(song_name) %>% mutate(id = row_number()),
@@ -211,16 +217,7 @@ summary(oob_preds)
 ib_preds <- predict(rf_fit, spotify_train)
 summary(ib_preds)
 
-# --------------------------------------------------------------------
-
-# graphs
-cormat <- cor(spotify_data %>% select_if(is.numeric) %>% drop_na()) %>% 
-  round(3)
-cormat
-
-library(corrplot)
-corrplot(cormat)
-# graph 1
+# -------------------------------------------------------------------
 
 ggplot(spotify_data, aes(x = energy, y = loudness)) + 
   geom_point() +
