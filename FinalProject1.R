@@ -176,6 +176,7 @@ ridge_fit1 <- cv.glmnet(song_popularity ~ instrumentalness + energy + loudness,
                        data = spotify_data,
                        nfolds = 10,
                        alpha = 0)
+plot(ridge_fit1)
 ridge_test1 <- data.frame(preds_ridge = predict(ridge_fit1, newdata = spotify_test))
 
 ridge_train1 <- data.frame(preds_ridge = predict(ridge_fit1, newdata = spotify_train))
@@ -185,12 +186,12 @@ ridge_fit2 <- cv.glmnet(song_popularity ~ acousticness + loudness + instrumental
                         data = spotify_data,
                         nfolds = 10,
                         alpha = 0)
+plot(ridge_fit2)
 ridge_test2 <- data.frame(preds_ridge = predict(ridge_fit2, newdata = spotify_test))
 
 ridge_train2 <- data.frame(preds_ridge = predict(ridge_fit2, newdata = spotify_train))
 
-# randomForest OK WE NEED TO FIGURE OUT MTRY???? and maybe do another random forest of the 
-# other three variables
+# random forest
 rf_fit <- randomForest(song_popularity ~ instrumentalness + energy + loudness,
                        data = spotify_data,
                        type = classification,
