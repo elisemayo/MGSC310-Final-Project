@@ -1,5 +1,5 @@
 # MGSC310-Final-Project
-Spotify Music Data
+Predicting Popularity from the Spotify API
 
 Dataset:
 https://www.kaggle.com/edalrami/19000-spotify-songs
