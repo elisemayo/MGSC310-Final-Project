@@ -15,7 +15,6 @@ library(purrr)
 library(rtweet)
 library(gganimate)
 library(magrittr)
-library(corrplot)
 # ------------------------------------------------------------------
 
 # data
@@ -23,10 +22,6 @@ spotify_data <- read.csv("song_data.csv")
 spotify_data2 <- read.csv("song_info.csv")
 
 # ------------------------------------------------------------------
-cormat <- cor(spotify_data %>% select_if(is.numeric) %>% drop_na()) %>% 
-  round(3)
-cormat
-corrplot(cormat)
 
 # data cleaning 
 spotify_data <- full_join(spotify_data %>% group_by(song_name) %>% mutate(id = row_number()),
@@ -43,17 +38,14 @@ top_hits_df <- data.frame(
   levels = top_hits_levels)
 
 # sentiment stuff
-devtools::install_github("ewenme/geniusr")
+# devtools::install_github("ewenme/geniusr")
 Sys.setenv(GENIUS_API_TOKEN = "4_BzjOh_yAd-EUJnRtmIo14sgluBiT20ERey8PpJ3OlWAcYvV3oolNZy9DUTnt-n")
 genius_token()
-
-help("geniusr")
 
 rows <- nrow(spotify_data)
 
 bing <- get_sentiments("bing")
 for(i in 2:rows){# scrape album tracklist
-  genius_token(force = FALSE)
   tracklist <- get_album_tracklist_search(artist_name = spotify_data$artist_name[i],
                                           album_name = spotify_data$album_names[i])
   
@@ -73,29 +65,7 @@ for(i in 2:rows){# scrape album tracklist
   
   sentiment_DF <- data.frame(spotify_data, sentiment = sentiment)
 }
-#This is where we tried to fix the problem with the DF by taking the code out of the for loop
-#This code is incomplete and doesn't work
-tracklist <- get_album_tracklist_search(artist_name = spotify_data$artist_name[2],
-                                        album_name = spotify_data$album_names[2])
-# scrape album lyrics
-lyrics <- map_df(tracklist$song_lyrics_url, get_lyrics_url)
 
-# counting negative / positive words
-sentiment <- lyrics %>%
-  unnest_tokens(word, line) %>%
-  # remove stop words
-  anti_join(stop_words) %>%
-  # join afinn score
-  inner_join(bing) %>%
-  # count negative / positive words
-  count(word, sentiment, sort = TRUE) %>%
-  ungroup()
-sentiment_DF <- data.frame(sentiment = sentiment)
-view(sentiment_DF)
-
-new_spotify_DF <- full_join(spotify_data %>% group_by(song_name) %>%  mutate(id = row_number()),
-                          sentiment_DF %>% group_by(song_name) %>% mutate(id = row_number()),
-                          )
 # scrape album lyrics
 #Install genius r from github page and not from cran we need to reinstall
 #Get API Key and register with genius (can do this if you have a twitter)--> Edit system environment variable(hard coded information, tells you about this instance of r
@@ -132,18 +102,15 @@ train_idx <- sample(1:nrow(spotify_data), size = 0.75 * nrow(spotify_data))
 spotify_train <- spotify_data %>% slice(train_idx)
 spotify_test <- spotify_data %>% slice(-train_idx)
 
-# --------------------------------------------------------------------
-
 # predictive models 
 # linear regression 1 
 mod1 <- lm(song_popularity ~ instrumentalness + energy + loudness,
            data = spotify_data)
 summary(mod1)
 
-preds_mod1<- data.frame(
+preds_mod1 <- data.frame(
   preds = predict(mod1),
   spotify_data)
-head(preds_mod1)
 
 # linear regression 2
 mod2 <- lm(energy ~ acousticness + loudness + instrumentalness,
@@ -161,31 +128,68 @@ lasso_fit1 <- cv.glmnet(song_popularity ~ instrumentalness + energy + loudness,
                        nfolds = 10,
                        data = spotify_train)
 plot(lasso_fit1)
-lasso1_test <- data.frame(preds_lasso = predict(lasso_fit1, newdata = spotify_test,
-                                               s = lasso_fit1$lambda.min))
-                         
-lasso1_train <- data.frame(preds_lasso = predict(lasso_fit1, newdata = spotify_train,
-                                                s = lasso_fit1$lambda.min))
+
+lasso_train1 <- data.frame(
+  preds_lasso = predict(lasso_fit1, newdata = spotify_train, s = 
+                          lasso_fit1$lambda.min)
+) %>% rename(lasso = 1)
+
+lasso_test1<- data.frame(
+  preds_lasso = predict(lasso_fit1, newdata = spotify_test, s = 
+                          lasso_fit1$lambda.min)
+) %>% rename(lasso = 1)
+
+caret::RMSE(lasso_train1$lasso, spotify_train$song_popularity)
+caret::RMSE(lasso_test1$lasso, spotify_test$song_popularity)
+caret::R2(lasso_train1$lasso, spotify_train$song_popularity)
+caret::R2(lasso_test1$lasso, spotify_test$song_popularity)
+ 
 # lasso 2
 lasso_fit2 <- cv.glmnet(song_popularity ~ acousticness + loudness + instrumentalness,
                         alpha = 1, 
                         nfolds = 10,
                         data = spotify_train)
 plot(lasso_fit2)
-lasso2_test <- data.frame(preds_lasso = predict(lasso_fit2, newdata = spotify_test,
-                                                s = lasso_fit2$lambda.min))
 
-lasso2_train <- data.frame(preds_lasso = predict(lasso_fit2, newdata = spotify_train,
-                                                 s = lasso_fit2$lambda.min))
+lasso_train2 <- data.frame(
+  preds_lasso = predict(lasso_fit2, newdata = spotify_train, s = 
+                          lasso_fit2$lambda.min)
+) %>% rename(lasso = 1)
+
+lasso_test2 <- data.frame(
+  preds_lasso = predict(lasso_fit2, newdata = spotify_test, s = 
+                          lasso_fit2$lambda.min)
+) %>% rename(lasso = 1)
+
+caret::RMSE(lasso_train2$lasso, spotify_train$song_popularity)
+caret::RMSE(lasso_test2$lasso, spotify_test$song_popularity)
+caret::R2(lasso_train2$lasso, spotify_train$song_popularity)
+caret::R2(lasso_test2$lasso, spotify_test$song_popularity)
+
 # ridge regression 1
 ridge_fit1 <- cv.glmnet(song_popularity ~ instrumentalness + energy + loudness,
                        data = spotify_data,
                        nfolds = 10,
                        alpha = 0)
+summary(ridge_fit1)
+ridge_fit1$lambda.min
+ridge_fit1$lambda.1se
 plot(ridge_fit1)
-ridge_test1 <- data.frame(preds_ridge = predict(ridge_fit1, newdata = spotify_test))
 
-ridge_train1 <- data.frame(preds_ridge = predict(ridge_fit1, newdata = spotify_train))
+ridge_train1 <- data.frame(
+  preds_ridge = predict(ridge_fit1, newdata = spotify_train, s = 
+                          ridge_fit1$lambda.min)
+) %>% rename(ridge = 1)
+
+ridge_test1 <- data.frame(
+  preds_ridge = predict(ridge_fit1, newdata = spotify_test, s = 
+                          ridge_fit1$lambda.min)
+) %>% rename(ridge = 1)
+
+caret::RMSE(ridge_train1$ridge, spotify_train$song_popularity)
+caret::RMSE(ridge_test1$ridge, spotify_test$song_popularity)
+caret::R2(ridge_train1$ridge, spotify_train$song_popularity)
+caret::R2(ridge_test1$ridge, spotify_test$song_popularity)
 
 # ridge regression 2
 ridge_fit2 <- cv.glmnet(song_popularity ~ acousticness + loudness + instrumentalness,
@@ -193,12 +197,27 @@ ridge_fit2 <- cv.glmnet(song_popularity ~ acousticness + loudness + instrumental
                         nfolds = 10,
                         alpha = 0)
 plot(ridge_fit2)
-ridge_test2 <- data.frame(preds_ridge = predict(ridge_fit2, newdata = spotify_test))
+ridge_fit2$lambda.min
+ridge_fit2$lambda.1se
 
-ridge_train2 <- data.frame(preds_ridge = predict(ridge_fit2, newdata = spotify_train))
+ridge_train2 <- data.frame(
+  preds_ridge = predict(ridge_fit2, newdata = spotify_train, s = 
+                          ridge_fit2$lambda.min)
+) %>% rename(ridge = 1)
 
-# random forest
-rf_fit <- randomForest(song_popularity ~ instrumentalness + energy + loudness,
+ridge_test2 <- data.frame(
+  preds_ridge = predict(ridge_fit2, newdata = spotify_test, s = 
+                          ridge_fit2$lambda.min)
+) %>% rename(ridge = 1)
+
+caret::RMSE(ridge_train2$ridge, spotify_train$song_popularity)
+caret::RMSE(ridge_test2$ridge, spotify_test$song_popularity)
+caret::R2(ridge_train2$ridge, spotify_train$song_popularity)
+caret::R2(ridge_test2$ridge, spotify_test$song_popularity)
+
+# randomForest OK WE NEED TO FIGURE OUT MTRY???? and maybe do another random forest of the 
+# other three variables
+rf_fit1 <- randomForest(song_popularity ~ instrumentalness + energy + loudness,
                        data = spotify_data,
                        type = classification,
                        ntree = 1000,
@@ -206,7 +225,6 @@ rf_fit <- randomForest(song_popularity ~ instrumentalness + energy + loudness,
                        importance = TRUE,
                        localImp = TRUE)
 rf_fit
-plot_min_depth_distribution(rf_fit)
 
 test_preds <- predict(rf_fit, spotify_test)
 summary(test_preds)
@@ -217,8 +235,31 @@ summary(oob_preds)
 ib_preds <- predict(rf_fit, spotify_train)
 summary(ib_preds)
 
-# -------------------------------------------------------------------
+plot_min_depth_distribution(rf_fit)
+plot_predict_interaction(rf_fit1, spotify_train, "energy", "song_popularity")
 
+rf_fit2 <- randomForest(song_popularity ~ instrumentalness + acousticness + loudness,
+                       data = spotify_data,
+                       type = classification,
+                       ntree = 1000,
+                       mtry = 3,
+                       importance = TRUE,
+                       localImp = TRUE)
+plot_predict_interaction(rf_fit2, spotify_train, "acousticness", "song_popularity")
+
+
+test_preds <- predict(rf_fit2, spotify_test)
+summary(test_preds)
+
+oob_preds <- predict(rf_fit2)
+summary(oob_preds)
+
+ib_preds <- predict(rf_fit2, spotify_train)
+summary(ib_preds)
+
+# --------------------------------------------------------------------
+
+# graphs
 ggplot(spotify_data, aes(x = energy, y = loudness)) + 
   geom_point() +
   geom_smooth()
