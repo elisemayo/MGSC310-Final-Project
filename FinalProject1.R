@@ -69,6 +69,15 @@ preds_mod2 <- data.frame(
   spotify_data)
 head(preds_mod2)
 
+mod3 <- lm(song_popularity ~ acousticness + loudness + instrumentalness,
+           data = spotify_data)
+summary(mod3)
+
+preds_mod3 <- data.frame(
+  preds = predict(mod3),
+  spotify_data)
+head(preds_mod3)
+
 # lasso 1
 lasso_fit1 <- cv.glmnet(song_popularity ~ instrumentalness + energy + loudness,
                        alpha = 1, 
